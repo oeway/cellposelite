@@ -1,4 +1,4 @@
-name: "cellpose-onnxruntime"
+name: "cellpose-onnx"
 backend: "python"
 
 input [

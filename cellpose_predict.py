@@ -197,17 +197,16 @@ def predict(
             calc_trace=calc_trace,
             verbose=verbose,
         )
-    return masks # dP.squeeze(), dist.squeeze(), p.squeeze(), bd.squeeze()
+    return masks.squeeze() # dP.squeeze(), dist.squeeze(), p.squeeze(), bd.squeeze()
 
 
 if __name__ == "__main__":
     import imageio
     import onnxruntime as ort
-    model_path = "/home/weiouyang/workspace/cellpose/cellposelite/cellpose_cyto.onnx"
+    model_path = "./cellpose_cyto.onnx"
     img = imageio.imread("https://www.cellpose.org/static/images/img02.png")
     img = img[None, :, :, 1:]
-    ort_session = ort.InferenceSession(model_path)
+    ort_session = ort.InferenceSession(model_path, providers=["CUDAExecutionProvider"])
     masks = predict(img, ort_session)
-    print(masks.shape)
-    imageio.imwrite("output.png", masks[0].astype("uint8"))
+    imageio.imwrite("output.png", masks.astype("uint8"))
     print("done!")
