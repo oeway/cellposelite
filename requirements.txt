@@ -2,9 +2,7 @@ numpy
 opencv-python
 edt
 scikit-image
-scikit-learn
 fastremap
 imageio
-tifffile
-onnxruntime
 numba
+onnxruntime-gpu

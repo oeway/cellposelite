@@ -1,9 +1,7 @@
 import numpy as np
 import cv2
 from compute_masks import compute_masks
-import onnxruntime as ort
 import transforms
-
 
 def run_net(
     imgs,
@@ -129,7 +127,7 @@ def run_tiled(
 
 def predict(
     x,
-    model_path,
+    ort_session,
     nclasses=3,
     resample=False,
     normalize=True,
@@ -149,7 +147,6 @@ def predict(
     shape = x.shape
     nimg = shape[0]
     iterator = range(nimg)
-    ort_session = ort.InferenceSession(model_path)
     if resample:
         dP = np.zeros((2, nimg, shape[1], shape[2]), np.float32)
         dist = np.zeros((nimg, shape[1], shape[2]), np.float32)
@@ -169,6 +166,7 @@ def predict(
         if rescale != 1.0:
             img = transforms_resize_image(img, rsz=rescale)
         yf, style = run_net(img, ort_session)
+        print(img.shape, yf.shape, style.shape)
         dist[i] = yf[:, :, 2]
         dP[:, i] = yf[:, :, :2].transpose((2, 0, 1))
         if nclasses == 4:
@@ -199,15 +197,17 @@ def predict(
             calc_trace=calc_trace,
             verbose=verbose,
         )
-    return masks.squeeze(), dP.squeeze(), dist.squeeze(), p.squeeze(), bd.squeeze()
+    return masks # dP.squeeze(), dist.squeeze(), p.squeeze(), bd.squeeze()
 
 
 if __name__ == "__main__":
-    model_path = "./cellpose_cyto.onnx"
     import imageio
-
+    import onnxruntime as ort
+    model_path = "/home/weiouyang/workspace/cellpose/cellposelite/cellpose_cyto.onnx"
     img = imageio.imread("https://www.cellpose.org/static/images/img02.png")
     img = img[None, :, :, 1:]
-    results = predict(img, model_path)
-    imageio.imwrite("output.png", results[0].astype("uint8"))
+    ort_session = ort.InferenceSession(model_path)
+    masks = predict(img, ort_session)
+    print(masks.shape)
+    imageio.imwrite("output.png", masks[0].astype("uint8"))
     print("done!")

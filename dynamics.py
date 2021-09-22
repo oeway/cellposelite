@@ -2,7 +2,7 @@ import time, os
 from scipy.ndimage.filters import maximum_filter1d
 import scipy.ndimage
 import numpy as np
-import tifffile
+import imageio
 from numba import njit
 import edt
 from skimage import measure
@@ -567,7 +567,7 @@ def labels_to_flows(
         if files is not None:
             for flow, file in zip(flows, files):
                 file_name = os.path.splitext(file)[0]
-                tifffile.imsave(file_name + "_flows.tif", flow)
+                imageio.imwrite(file_name + "_flows.tif", flow)
     else:
         dynamics_logger.info("flows precomputed")
         flows = [labels[n].astype(np.float32) for n in range(nimg)]
